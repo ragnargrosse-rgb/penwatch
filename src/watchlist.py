@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import yaml
@@ -35,11 +36,46 @@ class Watchlist:
     def _contains(text: str, term: str) -> bool:
         return term.casefold() in text.casefold()
 
+    @staticmethod
+    def _contains_exact(text: str, term: str) -> bool:
+        """
+        Match a term as a standalone token.
+
+        This prevents model '11' from matching '111',
+        while still allowing punctuation around the model number.
+        """
+        pattern = rf"(?<!\w){re.escape(term)}(?!\w)"
+        return re.search(pattern, text, flags=re.IGNORECASE) is not None
+
+    @classmethod
+    def _term_matches(cls, text: str, rule) -> bool:
+        """
+        A rule may be either a plain string or a dictionary:
+
+        - "soennecken"
+        - exact: "11"
+        """
+        if isinstance(rule, str):
+            return cls._contains(text, rule)
+
+        if isinstance(rule, dict) and "exact" in rule:
+            return cls._contains_exact(text, str(rule["exact"]))
+
+        raise ValueError(f"Invalid watchlist rule: {rule!r}")
+
+    @staticmethod
+    def _rule_label(rule) -> str:
+        if isinstance(rule, str):
+            return rule
+
+        if isinstance(rule, dict) and "exact" in rule:
+            return str(rule["exact"])
+
+        return str(rule)
+
     @classmethod
     def matches(cls, entry: dict, text: str) -> list[str]:
         """
-        Match text against a watchlist entry.
-
         Supported rules:
 
         keywords:
@@ -51,44 +87,77 @@ class Watchlist:
         include_all:
             Every term must match.
 
+        include_groups:
+            Each group must produce at least one match.
+            This enables:
+            A AND (B OR C) AND (D OR E)
+
         exclude:
-            If any term matches, the complete entry is rejected.
+            Any matching exclusion rejects the complete entry.
+
+        Rules can be plain strings or exact-token rules:
+            - "pelikan"
+            - exact: "400"
         """
 
         # Exclusions always take precedence.
-        for term in entry.get("exclude", []):
-            if cls._contains(text, term):
+        for rule in entry.get("exclude", []):
+            if cls._term_matches(text, rule):
                 return []
 
-        include_all = entry.get("include_all", [])
-        for term in include_all:
-            if not cls._contains(text, term):
+        matched_terms = []
+
+        # Every include_all rule is mandatory.
+        for rule in entry.get("include_all", []):
+            if not cls._term_matches(text, rule):
+                return []
+            matched_terms.append(cls._rule_label(rule))
+
+        # Every include_group must contain at least one match.
+        include_groups = entry.get("include_groups", [])
+
+        for group in include_groups:
+            group_matches = [
+                rule
+                for rule in group
+                if cls._term_matches(text, rule)
+            ]
+
+            if not group_matches:
                 return []
 
+            matched_terms.extend(
+                cls._rule_label(rule)
+                for rule in group_matches
+            )
+
+        # include_any or legacy keywords.
         include_any = entry.get("include_any", [])
-
-        # Backwards compatibility with existing watchlists.
         legacy_keywords = entry.get("keywords", [])
+        any_rules = include_any or legacy_keywords
 
-        any_terms = include_any or legacy_keywords
+        if any_rules:
+            any_matches = [
+                rule
+                for rule in any_rules
+                if cls._term_matches(text, rule)
+            ]
 
-        matched_terms = [
-            term
-            for term in any_terms
-            if cls._contains(text, term)
-        ]
+            if not any_matches:
+                return []
 
-        if any_terms and not matched_terms:
+            matched_terms.extend(
+                cls._rule_label(rule)
+                for rule in any_matches
+            )
+
+        # Empty rules must never match everything.
+        if (
+            not entry.get("include_all")
+            and not include_groups
+            and not any_rules
+        ):
             return []
 
-        # Prevent an empty rule set from matching everything.
-        if not any_terms and not include_all:
-            return []
-
-        matched_all = [
-            term
-            for term in include_all
-            if cls._contains(text, term)
-        ]
-
-        return matched_all + matched_terms
+        # Remove duplicates while preserving order.
+        return list(dict.fromkeys(matched_terms))
