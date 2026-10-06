@@ -1,17 +1,193 @@
 watchlists:
-  - id: soennecken
-    name: "Soennecken"
+
+  # ============================================================
+  # SOENNECKEN 111 / 222 + PENCILS 11 / 22
+  # ============================================================
+
+  - id: soennecken-111-222
+    name: "Soennecken 111 / 222 / 11 / 22"
     enabled: true
 
-    keywords:
-      - "soennecken"
-      - "sönnecken"
+    include_groups:
+      -
+        - "soennecken"
+        - "sönnecken"
+      -
+        - exact: "111"
+        - exact: "222"
+        - exact: "11"
+        - exact: "22"
 
     sources:
       reddit:
         enabled: true
         subreddits:
           - "Pen_Swap"
+      ebay:
+        enabled: true
 
     notification:
-      title: "PenWatch – Soennecken"
+      title: "PenWatch - Soennecken"
+
+
+  # ============================================================
+  # PELIKAN LIGHT TORTOISE / HELL SCHILDPATT
+  # ============================================================
+
+  - id: pelikan-light-tortoise
+    name: "Pelikan Hell Schildpatt"
+    enabled: true
+
+    include_all:
+      - "pelikan"
+
+    include_groups:
+      -
+        - "hell schildpatt"
+        - "hellschildpatt"
+        - "light tortoise"
+        - "light tortoiseshell"
+        - "full light tortoise"
+
+    sources:
+      reddit:
+        enabled: true
+        subreddits:
+          - "Pen_Swap"
+      ebay:
+        enabled: true
+
+    notification:
+      title: "PenWatch - Pelikan Hell Schildpatt"
+
+
+  # ============================================================
+  # PELIKAN ART / ADVERTISING CALENDAR 1987
+  # ============================================================
+
+  - id: pelikan-calendar-1987
+    name: "Pelikan Kalender 1987"
+    enabled: true
+
+    include_all:
+      - "pelikan"
+
+    include_groups:
+      -
+        - exact: "1987"
+      -
+        - "kalender"
+        - "calendar"
+        - "wandkalender"
+        - "kunstkalender"
+        - "plakatkalender"
+        - "werbekalender"
+
+    exclude:
+      - "TKKG"
+
+    sources:
+      reddit:
+        enabled: true
+        subreddits:
+          - "Pen_Swap"
+      ebay:
+        enabled: true
+
+    notification:
+      title: "PenWatch - Pelikan Kalender 1987"
+
+
+  # ============================================================
+  # PELIKAN / GÜNTHER WAGNER PREISLISTE 30B
+  # ============================================================
+
+  - id: pelikan-pricelist-30b
+    name: "Pelikan Preisliste 30B"
+    enabled: true
+
+    include_groups:
+      -
+        - "pelikan"
+        - "günther wagner"
+        - "guenther wagner"
+        - "gunther wagner"
+        - "günther-wagner"
+        - "guenther-wagner"
+      -
+        - exact: "30B"
+        - "30 B"
+
+    sources:
+      reddit:
+        enabled: true
+        subreddits:
+          - "Pen_Swap"
+      ebay:
+        enabled: true
+
+    notification:
+      title: "PenWatch - Pelikan Preisliste 30B"
+
+
+  # ============================================================
+  # PELIKAN 60 / P60 "KNICKEBEIN"
+  # ============================================================
+
+  - id: pelikan-knickebein
+    name: "Pelikan 60 / P60 Knickebein"
+    enabled: true
+
+    include_groups:
+      -
+        - "pelikan"
+        - "günther wagner"
+        - "guenther wagner"
+      -
+        - "knickebein"
+        - "knicke-bein"
+        - exact: "P60"
+        - "P 60"
+        - exact: "60"
+
+    sources:
+      reddit:
+        enabled: true
+        subreddits:
+          - "Pen_Swap"
+      ebay:
+        enabled: true
+
+    notification:
+      title: "PenWatch - Pelikan Knickebein"
+
+
+  # ============================================================
+  # PELIKAN M800 OCEAN SWIRL
+  # ============================================================
+
+  - id: pelikan-m800-ocean-swirl
+    name: "Pelikan M800 Ocean Swirl"
+    enabled: true
+
+    include_all:
+      - "pelikan"
+
+    include_groups:
+      -
+        - exact: "M800"
+        - "M 800"
+      -
+        - "ocean swirl"
+        - "oceanswirl"
+
+    sources:
+      reddit:
+        enabled: true
+        subreddits:
+          - "Pen_Swap"
+      ebay:
+        enabled: true
+
+    notification:
+      title: "PenWatch - Pelikan M800 Ocean Swirl"
