@@ -1,5 +1,9 @@
 from decimal import Decimal
 
+from dotenv import load_dotenv
+
+load_dotenv("/opt/penwatch/.env")
+
 from monitors.penboard import PenboardItem
 from notifications.ntfy import NtfyNotifier
 from watchlist import Watchlist
