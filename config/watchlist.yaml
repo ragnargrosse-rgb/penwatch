@@ -1,0 +1,17 @@
+watchlists:
+  - id: soennecken
+    name: "Soennecken"
+    enabled: true
+
+    keywords:
+      - "soennecken"
+      - "sönnecken"
+
+    sources:
+      reddit:
+        enabled: true
+        subreddits:
+          - "Pen_Swap"
+
+    notification:
+      title: "PenWatch – Soennecken"
