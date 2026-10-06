@@ -20,44 +20,150 @@ def run_test(
 
 
 def main() -> None:
-    pelikan_entry = {
-        "include_all": ["pelikan"],
-        "include_any": [
-            "hell schildpatt",
-            "light tortoise",
-            "light tortoiseshell",
-        ],
-        "exclude": [
-            "m400",
-            "tortoise white",
+
+    # ---------------------------------------------------------
+    # Soennecken 111 / 222 fountain pens and 11 / 22 pencils
+    # ---------------------------------------------------------
+
+    soennecken_entry = {
+        "include_all": ["soennecken"],
+        "include_groups": [
+            [
+                {"exact": "111"},
+                {"exact": "222"},
+                {"exact": "11"},
+                {"exact": "22"},
+            ]
         ],
     }
 
-    # 1. Valid match
     run_test(
-        "valid Pelikan Light Tortoise",
-        pelikan_entry,
-        "Vintage Pelikan 400 Light Tortoise Fountain Pen",
+        "Soennecken 111",
+        soennecken_entry,
+        "Vintage Soennecken 111 fountain pen",
         True,
     )
 
-    # 2. Required term 'Pelikan' missing
     run_test(
-        "missing required Pelikan",
-        pelikan_entry,
-        "Vintage 400 Light Tortoise Fountain Pen",
+        "Soennecken 222",
+        soennecken_entry,
+        "Soennecken 222 Kolbenfueller",
+        True,
+    )
+
+    run_test(
+        "Soennecken pencil 11",
+        soennecken_entry,
+        "Vintage Soennecken 11 mechanical pencil",
+        True,
+    )
+
+    run_test(
+        "Soennecken pencil 22",
+        soennecken_entry,
+        "Soennecken Bleistift Modell 22",
+        True,
+    )
+
+    # 11 must not match 111 accidentally
+    matches = Watchlist.matches(
+        soennecken_entry,
+        "Soennecken 111 fountain pen",
+    )
+
+    exact_test = (
+        "111" in matches
+        and "11" not in matches
+    )
+
+    print(
+        f"{'PASS' if exact_test else 'FAIL'}: "
+        f"111 does not also match 11 | matches={matches}"
+    )
+
+    # 22 must not match 222 accidentally
+    matches = Watchlist.matches(
+        soennecken_entry,
+        "Soennecken 222 fountain pen",
+    )
+
+    exact_test = (
+        "222" in matches
+        and "22" not in matches
+    )
+
+    print(
+        f"{'PASS' if exact_test else 'FAIL'}: "
+        f"222 does not also match 22 | matches={matches}"
+    )
+
+    run_test(
+        "wrong Soennecken model",
+        soennecken_entry,
+        "Vintage Soennecken 333 fountain pen",
         False,
     )
 
-    # 3. Exclusion overrides otherwise valid match
     run_test(
-        "excluded modern M400",
-        pelikan_entry,
-        "Pelikan M400 Light Tortoise Fountain Pen",
+        "model without Soennecken",
+        soennecken_entry,
+        "Vintage fountain pen model 111",
         False,
     )
 
-    # 4. Existing legacy syntax must still work
+    # ---------------------------------------------------------
+    # Multiple AND/OR groups
+    # ---------------------------------------------------------
+
+    pelikan_entry = {
+        "include_all": ["pelikan"],
+        "include_groups": [
+            [
+                {"exact": "140"},
+                {"exact": "400"},
+                {"exact": "400N"},
+                {"exact": "400NN"},
+            ],
+            [
+                "hell schildpatt",
+                "light tortoise",
+                "light tortoiseshell",
+            ],
+        ],
+    }
+
+    run_test(
+        "Pelikan with model and colour",
+        pelikan_entry,
+        "Pelikan 400NN Light Tortoise fountain pen",
+        True,
+    )
+
+    run_test(
+        "Pelikan colour but no model",
+        pelikan_entry,
+        "Pelikan Light Tortoise fountain pen",
+        False,
+    )
+
+    run_test(
+        "Pelikan model but no colour",
+        pelikan_entry,
+        "Pelikan 400NN vintage fountain pen",
+        False,
+    )
+
+    run_test(
+        "model and colour but no Pelikan",
+        pelikan_entry,
+        "400NN Light Tortoise fountain pen",
+        False,
+    )
+
+    # ---------------------------------------------------------
+    # Legacy compatibility
+    # ---------------------------------------------------------
+
     legacy_entry = {
         "keywords": [
             "soennecken",
@@ -66,9 +172,9 @@ def main() -> None:
     }
 
     run_test(
-        "legacy Soennecken",
+        "legacy keyword syntax",
         legacy_entry,
-        "Vintage Soennecken 111 Extra Fountain Pen",
+        "Vintage Soennecken fountain pen",
         True,
     )
 
