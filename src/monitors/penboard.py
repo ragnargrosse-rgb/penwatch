@@ -11,25 +11,20 @@ class PenboardItem:
     item_id: str
     title: str
     url: str
-    brand: str | None = None
-    model: str | None = None
-    year: str | None = None
-    colour: str | None = None
-    condition: str | None = None
-    nib: str | None = None
+    description: str
     price: Decimal | None = None
     currency: str = "EUR"
+    condition: str | None = None
+    year: str | None = None
+    image_url: str | None = None
 
     @property
     def searchable_text(self) -> str:
         parts = [
             self.title,
-            self.brand or "",
-            self.model or "",
-            self.year or "",
-            self.colour or "",
+            self.description,
             self.condition or "",
-            self.nib or "",
+            self.year or "",
         ]
 
         return "\n".join(
@@ -40,7 +35,8 @@ class PenboardItem:
 class PenboardMonitor:
     SOURCE = "penboard"
 
-    WHATS_NEW_URL = "https://www.penboard.de/shop/whatsnew"
+    BASE_URL = "https://www.penboard.de"
+    WHATS_NEW_URL = f"{BASE_URL}/shop/whatsnew"
 
     def __init__(self, timeout: int = 20) -> None:
         self.timeout = timeout
@@ -59,119 +55,127 @@ class PenboardMonitor:
 
         response.raise_for_status()
 
-        return self.parse_html(
-            response.text,
-            self.WHATS_NEW_URL,
-        )
+        return self.parse_html(response.text)
 
     @staticmethod
     def _clean(value: str | None) -> str | None:
-        if value is None:
-            return None
-
-        value = " ".join(value.split())
-
-        return value or None
-
-    @staticmethod
-    def _parse_price(value: str | None) -> Decimal | None:
         if not value:
             return None
 
+        value = " ".join(value.split())
+        return value or None
+
+    @staticmethod
+    def _parse_price(text: str) -> Decimal | None:
         match = re.search(
-            r"€\s*([\d.]+(?:,\d{1,2})?)",
-            value,
+            r"(\d{1,3}(?:\.\d{3})*|\d+),(\d{2})\s*(?:€|euro)",
+            text,
+            re.IGNORECASE,
         )
 
         if not match:
             return None
 
-        normalized = (
-            match.group(1)
-            .replace(".", "")
-            .replace(",", ".")
+        whole = match.group(1).replace(".", "")
+        cents = match.group(2)
+
+        return Decimal(f"{whole}.{cents}")
+
+    @staticmethod
+    def _extract_field(
+        text: str,
+        field: str,
+    ) -> str | None:
+        match = re.search(
+            rf"\b{re.escape(field)}\s*:\s*"
+            rf"(.+?)(?=\s+[A-Z][A-Za-z ]{{1,20}}\s*:|$)",
+            text,
+            re.IGNORECASE,
         )
 
-        return Decimal(normalized)
+        if not match:
+            return None
+
+        return " ".join(match.group(1).split())
 
     @classmethod
-    def parse_html(
-        cls,
-        html: str,
-        source_url: str,
-    ) -> list[PenboardItem]:
+    def parse_html(cls, html: str) -> list[PenboardItem]:
         soup = BeautifulSoup(html, "html.parser")
 
-        items = []
+        items: list[PenboardItem] = []
 
-        # Penboard listings expose their item number in the
-        # visible item information. We use each heading as the
-        # beginning of a candidate listing block.
-        for heading in soup.find_all(["h2", "h3"]):
-            title = cls._clean(
-                heading.get_text(" ", strip=True)
+        # Actual Penboard structure:
+        # <div class="row" id="hd_0"> ... /shop/details/114596 ... </div>
+        listing_blocks = soup.find_all(
+            "div",
+            id=re.compile(r"^hd_\d+$"),
+        )
+
+        for block in listing_blocks:
+            details_link = block.find(
+                "a",
+                href=re.compile(r"/shop/details/\d+"),
             )
 
-            if not title:
+            if details_link is None:
                 continue
 
-            container = heading.find_parent()
+            href = details_link.get("href", "")
 
-            if container is None:
-                continue
-
-            text = container.get_text(
-                "\n",
-                strip=True,
+            id_match = re.search(
+                r"/shop/details/(\d+)",
+                href,
             )
 
-            item_match = re.search(
-                r"(?:Item No\.|Artikelnummer)\s*([A-Za-z0-9_-]+)",
+            if not id_match:
+                continue
+
+            item_id = id_match.group(1)
+
+            url = requests.compat.urljoin(
+                cls.BASE_URL,
+                href,
+            )
+
+            text = cls._clean(
+                block.get_text(" ", strip=True)
+            )
+
+            if not text:
+                continue
+
+            # Remove price and trailing "Details" from the text
+            description = re.sub(
+                r"^\s*\d+(?:[.,]\d+)?\s*(?:€|euro)\s*",
+                "",
                 text,
-                re.IGNORECASE,
+                flags=re.IGNORECASE,
             )
 
-            if not item_match:
-                continue
-
-            item_id = item_match.group(1)
-
-            def field(*labels: str) -> str | None:
-                for label in labels:
-                    pattern = (
-                        rf"{re.escape(label)}\s*"
-                        rf"([^\n]+)"
-                    )
-
-                    match = re.search(
-                        pattern,
-                        text,
-                        re.IGNORECASE,
-                    )
-
-                    if match:
-                        return cls._clean(
-                            match.group(1)
-                        )
-
-                return None
-
-            price_text = field(
-                "EU price incl. VAT",
-                "EU Preis inkl. Steuer",
-                "EU price",
-                "Export price",
-                "Export Preis",
+            description = re.sub(
+                r"\s*Details\s*$",
+                "",
+                description,
+                flags=re.IGNORECASE,
             )
 
-            link = heading.find("a", href=True)
+            description = cls._clean(description) or text
 
-            url = source_url
+            # Penboard's first descriptive words are useful enough
+            # as a compact notification title.
+            title = description
 
-            if link:
-                url = requests.compat.urljoin(
-                    source_url,
-                    link["href"],
+            if len(title) > 120:
+                title = title[:117].rstrip() + "..."
+
+            image = block.find("img", src=True)
+
+            image_url = None
+
+            if image:
+                image_url = requests.compat.urljoin(
+                    cls.BASE_URL,
+                    image["src"],
                 )
 
             items.append(
@@ -179,41 +183,24 @@ class PenboardMonitor:
                     item_id=item_id,
                     title=title,
                     url=url,
-                    brand=field(
-                        "Brand",
-                        "Marke",
-                    ),
-                    model=field(
-                        "Model",
-                        "Modell",
-                    ),
-                    year=field(
-                        "Year",
-                        "Jahr",
-                    ),
-                    colour=field(
-                        "Colour",
-                        "Farbe",
-                    ),
-                    condition=field(
+                    description=description,
+                    price=cls._parse_price(text),
+                    condition=cls._extract_field(
+                        text,
                         "Condition",
-                        "Zustand",
                     ),
-                    nib=field(
-                        "Nib",
-                        "Feder",
+                    year=cls._extract_field(
+                        text,
+                        "Year",
                     ),
-                    price=cls._parse_price(
-                        price_text
-                    ),
+                    image_url=image_url,
                 )
             )
 
-        # Avoid duplicate item numbers if Penboard's HTML
-        # presents the same item more than once.
-        unique = {}
-
-        for item in items:
-            unique[item.item_id] = item
+        # Defensive duplicate removal
+        unique = {
+            item.item_id: item
+            for item in items
+        }
 
         return list(unique.values())
