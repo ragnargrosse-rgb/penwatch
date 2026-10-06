@@ -88,7 +88,7 @@ class PenboardMonitor:
     ) -> str | None:
         match = re.search(
             rf"\b{re.escape(field)}\s*:\s*"
-            rf"(.+?)(?=\s+[A-Z][A-Za-z ]{{1,20}}\s*:|$)",
+            rf"(.+?)(?=\s+[A-Z][A-Za-z ]{{1,20}}\s*:|\s+Details\s*$|$)",
             text,
             re.IGNORECASE,
         )
