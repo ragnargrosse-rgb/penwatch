@@ -27,7 +27,7 @@ def main() -> None:
         return
 
     notifier.send(
-        title="PenWatch – Soennecken",
+        title="PenWatch - Soennecken",
         message=title,
         url=url,
         priority="high",
