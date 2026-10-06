@@ -32,13 +32,63 @@ class Watchlist:
         ]
 
     @staticmethod
-    def matches(entry: dict, text: str) -> list[str]:
-        text_normalized = text.casefold()
+    def _contains(text: str, term: str) -> bool:
+        return term.casefold() in text.casefold()
 
-        matches = []
+    @classmethod
+    def matches(cls, entry: dict, text: str) -> list[str]:
+        """
+        Match text against a watchlist entry.
 
-        for keyword in entry.get("keywords", []):
-            if keyword.casefold() in text_normalized:
-                matches.append(keyword)
+        Supported rules:
 
-        return matches
+        keywords:
+            Legacy mode. At least one keyword must match.
+
+        include_any:
+            At least one term must match.
+
+        include_all:
+            Every term must match.
+
+        exclude:
+            If any term matches, the complete entry is rejected.
+        """
+
+        # Exclusions always take precedence.
+        for term in entry.get("exclude", []):
+            if cls._contains(text, term):
+                return []
+
+        include_all = entry.get("include_all", [])
+        for term in include_all:
+            if not cls._contains(text, term):
+                return []
+
+        include_any = entry.get("include_any", [])
+
+        # Backwards compatibility with existing watchlists.
+        legacy_keywords = entry.get("keywords", [])
+
+        any_terms = include_any or legacy_keywords
+
+        matched_terms = [
+            term
+            for term in any_terms
+            if cls._contains(text, term)
+        ]
+
+        if any_terms and not matched_terms:
+            return []
+
+        # Prevent an empty rule set from matching everything.
+        if not any_terms and not include_all:
+            return []
+
+        matched_all = [
+            term
+            for term in include_all
+            if cls._contains(text, term)
+        ]
+
+        return matched_all + matched_terms
