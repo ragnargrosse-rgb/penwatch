@@ -41,3 +41,13 @@ API credentials, notification credentials and other secrets are stored locally o
 ## Status
 
 Early development.
+
+### Data access and Devvit
+
+PenWatch requires limited read-only access to recent public submissions for its personal keyword-monitoring functionality.
+
+The specific data requirements, data-minimization approach, and the functional limitation that prevents this use case from being implemented through Devvit's subreddit-installed event model are documented here:
+
+[Reddit Data Access](docs/reddit-data-access.md)
+
+The Reddit integration will not be activated unless appropriate Reddit API access has been granted.
