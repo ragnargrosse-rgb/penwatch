@@ -1,7 +1,12 @@
 import os
 
+from dotenv import load_dotenv
+
 from database import Database
 from notifications.ntfy import NtfyNotifier
+
+
+load_dotenv()
 
 
 def main() -> None:
