@@ -87,7 +87,7 @@ A source integration therefore retrieves public listings, while the central watc
 | Interpens | Operational | Public dealer inventory |
 | VintagePens | Operational | Public feed/inventory |
 | Catawiki | Operational / being extended | Paginated fountain-pen collection |
-| eBay | Integration in progress | API credentials granted; implementation/testing pending |
+| eBay | Operational | eBay Browse API; worldwide listing discovery; local matching and deduplication |
 | Reddit | Inactive / API access pending | Proposed read-only public submission monitoring |
 
 ### Penboard
@@ -141,11 +141,25 @@ This approach is intended to minimize unnecessary requests.
 
 ### eBay
 
-eBay API credentials have been granted and the source integration is currently being implemented.
+The eBay integration is operational and uses the eBay Browse API with application-level OAuth authentication.
 
-The intended architecture is the same as for the other PenWatch sources:
+PenWatch currently:
 
-    eBay API
+- searches eBay through the `EBAY_DE` marketplace context;
+- explicitly uses worldwide item-location coverage;
+- performs multiple collector-defined discovery queries configured in `config/watchlist.yaml`;
+- normalizes returned listings before applying the central watchlist rules;
+- deduplicates listings using their eBay item IDs;
+- stores previously discovered listings as persistent source state;
+- sends private ntfy notifications only for newly discovered listings that match a configured watchlist;
+- reuses the OAuth application access token during a monitoring run instead of requesting a new token for every search.
+
+The processing architecture is:
+
+    eBay Browse API
+        |
+        v
+    worldwide listing discovery
         |
         v
     normalized listing data
@@ -159,9 +173,15 @@ The intended architecture is the same as for the other PenWatch sources:
         v
     private ntfy notification
 
-Credentials and secrets are stored outside the repository.
+A baseline of listings present when the integration was activated was stored as already known. This prevents existing marketplace inventory from generating retrospective notifications when monitoring starts.
 
-The eBay integration will be marked operational only after API retrieval, matching, deduplication, and notification behaviour have been tested successfully.
+The eBay monitor runs periodically through a dedicated systemd service and timer. The current production interval is ten minutes.
+
+eBay search queries are maintained with the relevant source configuration in `config/watchlist.yaml`, while the matching rules remain source-independent.
+
+The integration also provides the marketplace account-deletion notification endpoint required for eBay production API use. The endpoint is operated separately from the listing monitor and has been successfully validated through eBay's endpoint verification process.
+
+Credentials, OAuth secrets, verification tokens, notification configuration, and other private values are stored outside the repository.
 
 ---
 
@@ -327,10 +347,10 @@ PenWatch does not operate a public search service and does not redistribute coll
 - SQLite state and duplicate prevention
 - ntfy push notifications
 - scheduled execution using systemd
+- eBay Browse API monitoring
 
 ### Integration in progress
 
-- eBay API monitoring
 - selective Catawiki detail-page enrichment
 
 ### Inactive / awaiting access
