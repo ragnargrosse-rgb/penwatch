@@ -25,6 +25,8 @@ watchlists:
           - "Pen_Swap"
       ebay:
         enabled: true
+        queries:
+          - "Soennecken"
 
     notification:
       title: "PenWatch - Soennecken"
@@ -56,6 +58,9 @@ watchlists:
           - "Pen_Swap"
       ebay:
         enabled: true
+        queries:
+          - "Pelikan Schildpatt"
+          - "Pelikan tortoise"
 
     notification:
       title: "PenWatch - Pelikan Hell Schildpatt"
@@ -93,6 +98,8 @@ watchlists:
           - "Pen_Swap"
       ebay:
         enabled: true
+        queries:
+          - "Pelikan 1987"
 
     notification:
       title: "PenWatch - Pelikan Kalender 1987"
@@ -125,6 +132,9 @@ watchlists:
           - "Pen_Swap"
       ebay:
         enabled: true
+        queries:
+          - "Pelikan 30B"
+          - "Günther Wagner 30B"
 
     notification:
       title: "PenWatch - Pelikan Preisliste 30B"
@@ -157,6 +167,9 @@ watchlists:
           - "Pen_Swap"
       ebay:
         enabled: true
+        queries:
+          - "Pelikan Knickebein"
+          - "Pelikan P60"
 
     notification:
       title: "PenWatch - Pelikan Knickebein"
@@ -188,6 +201,38 @@ watchlists:
           - "Pen_Swap"
       ebay:
         enabled: true
+        queries:
+          - "Pelikan M800 Ocean Swirl"
 
     notification:
       title: "PenWatch - Pelikan M800 Ocean Swirl"
+# ============================================================
+# PELIKAN / BBB OR OBBB NIB
+# ============================================================
+
+  - id: pelikan-bbb-obbb
+    name: "Pelikan BBB / OBBB"
+    enabled: true
+
+    include_all:
+      - "pelikan"
+
+    include_groups:
+      -
+        - exact: "BBB"
+        - exact: "OBBB"
+
+    sources:
+      reddit:
+        enabled: true
+        subreddits:
+          - "Pen_Swap"
+
+      ebay:
+        enabled: true
+        queries:
+          - "Pelikan BBB"
+          - "Pelikan OBBB"
+
+    notification:
+      title: "PenWatch - Pelikan BBB / OBBB"
