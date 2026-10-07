@@ -1,4 +1,6 @@
+import math
 import re
+import time
 import requests
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
@@ -19,21 +21,46 @@ class CatawikiMonitor:
     SOURCE = "catawiki"
     URL = "https://www.catawiki.com/en/x/31353-fountain-pen"
 
-    def fetch(self) -> list[CatawikiItem]:
+    HEADERS = {
+        "User-Agent": (
+            "PenWatch/1.0 "
+            "(personal non-commercial collector monitor)"
+        ),
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+
+    REQUEST_DELAY = 0.5
+    TIMEOUT = 20
+
+    def _fetch_page(self, page: int) -> tuple[list[CatawikiItem], int | None]:
+        url = self.URL if page == 1 else f"{self.URL}?page={page}"
+
         response = requests.get(
-            self.URL,
-            headers={
-                "User-Agent": (
-                    "PenWatch/1.0 "
-                    "(personal non-commercial collector monitor)"
-                ),
-                "Accept-Language": "en-US,en;q=0.9",
-            },
-            timeout=20,
+            url,
+            headers=self.HEADERS,
+            timeout=self.TIMEOUT,
         )
         response.raise_for_status()
 
         soup = BeautifulSoup(response.text, "html.parser")
+
+        total = None
+
+        next_data = soup.find("script", id="__NEXT_DATA__")
+        if next_data and next_data.string:
+            try:
+                import json
+
+                data = json.loads(next_data.string)
+                total = (
+                    data
+                    .get("props", {})
+                    .get("pageProps", {})
+                    .get("collectionLots", {})
+                    .get("total")
+                )
+            except (ValueError, TypeError, AttributeError):
+                total = None
 
         items = []
         seen_ids = set()
@@ -53,12 +80,11 @@ class CatawikiMonitor:
             seen_ids.add(item_id)
 
             if href.startswith("/"):
-                url = "https://www.catawiki.com" + href
+                item_url = "https://www.catawiki.com" + href
             else:
-                url = href
+                item_url = href
 
             title_node = card.select_one(".c-lot-card__title")
-
             if title_node:
                 title = title_node.get_text(" ", strip=True)
             else:
@@ -88,10 +114,48 @@ class CatawikiMonitor:
                     title=title,
                     price=None,
                     currency=None,
-                    url=url,
+                    url=item_url,
                     image_url=image_url,
                     searchable_text=searchable_text,
                 )
             )
 
-        return items
+        return items, total
+
+    def fetch(self) -> list[CatawikiItem]:
+        first_page, total = self._fetch_page(1)
+
+        if not first_page:
+            return []
+
+        items_per_page = len(first_page)
+
+        if total is None or total <= items_per_page:
+            return first_page
+
+        total_pages = math.ceil(total / items_per_page)
+
+        all_items = []
+        seen_ids = set()
+
+        def add_items(page_items):
+            for item in page_items:
+                if item.item_id in seen_ids:
+                    continue
+
+                seen_ids.add(item.item_id)
+                all_items.append(item)
+
+        add_items(first_page)
+
+        for page in range(2, total_pages + 1):
+            time.sleep(self.REQUEST_DELAY)
+
+            page_items, _ = self._fetch_page(page)
+
+            if not page_items:
+                break
+
+            add_items(page_items)
+
+        return all_items
