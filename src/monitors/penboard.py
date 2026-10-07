@@ -37,25 +37,64 @@ class PenboardMonitor:
 
     BASE_URL = "https://www.penboard.de"
     WHATS_NEW_URL = f"{BASE_URL}/shop/whatsnew"
+    SEARCH_URL = f"{BASE_URL}/shop/searchshop/"
+
+    SEARCH_TERMS = (
+        "Pelikan",
+        "Soennecken",
+    )
 
     def __init__(self, timeout: int = 20) -> None:
         self.timeout = timeout
 
     def fetch(self) -> list[PenboardItem]:
+        headers = {
+            "User-Agent": (
+                "PenWatch/1.0 "
+                "(personal non-commercial collector monitor)"
+            )
+        }
+
+        all_items: list[PenboardItem] = []
+
+        # What's New remains useful for newly listed inventory.
         response = requests.get(
             self.WHATS_NEW_URL,
             timeout=self.timeout,
-            headers={
-                "User-Agent": (
-                    "PenWatch/1.0 "
-                    "(personal non-commercial collector monitor)"
-                )
-            },
+            headers=headers,
         )
-
         response.raise_for_status()
 
-        return self.parse_html(response.text)
+        all_items.extend(
+            self.parse_html(response.text)
+        )
+
+        # Search current inventory for brands relevant to
+        # the active PenWatch watchlists.
+        for term in self.SEARCH_TERMS:
+            response = requests.get(
+                self.SEARCH_URL,
+                params={
+                    "srchvalue": term,
+                    "shop_seller": "0",
+                },
+                timeout=self.timeout,
+                headers=headers,
+            )
+            response.raise_for_status()
+
+            all_items.extend(
+                self.parse_search_html(response.text)
+            )
+
+        # The same item can occur in What's New and search results.
+        unique = {
+            item.item_id: item
+            for item in all_items
+        }
+
+        return list(unique.values())
+
 
     @staticmethod
     def _clean(value: str | None) -> str | None:
@@ -97,6 +136,100 @@ class PenboardMonitor:
             return None
 
         return " ".join(match.group(1).split())
+
+    @classmethod
+    def parse_search_html(cls, html: str) -> list[PenboardItem]:
+        soup = BeautifulSoup(html, "html.parser")
+
+        items: list[PenboardItem] = []
+
+        # Search/inventory pages use:
+        # <td id="T114721"> ... </td>
+        listing_blocks = soup.find_all(
+            "td",
+            id=re.compile(r"^T[A-Za-z0-9]+$"),
+        )
+
+        for block in listing_blocks:
+            text = cls._clean(
+                block.get_text(" ", strip=True)
+            )
+
+            if not text:
+                continue
+
+            id_match = re.search(
+                r"\bItem No\.\s*([A-Za-z0-9]+)",
+                text,
+                re.IGNORECASE,
+            )
+
+            if id_match:
+                item_id = id_match.group(1)
+            else:
+                raw_id = block.get("id", "")
+                item_id = (
+                    raw_id[1:]
+                    if raw_id.startswith("T")
+                    else raw_id
+                )
+
+            if not item_id:
+                continue
+
+            title_node = block.find("h2")
+
+            title = (
+                cls._clean(
+                    title_node.get_text(" ", strip=True)
+                )
+                if title_node
+                else None
+            )
+
+            if not title:
+                continue
+
+            # Stable item-specific HTTP URL available on these pages.
+            url = requests.compat.urljoin(
+                cls.BASE_URL,
+                f"/shop/enquiry/{item_id}",
+            )
+
+            image = block.find("img", src=True)
+            image_url = None
+
+            if image:
+                image_url = requests.compat.urljoin(
+                    cls.BASE_URL,
+                    image["src"],
+                )
+
+            items.append(
+                PenboardItem(
+                    item_id=item_id,
+                    title=title,
+                    url=url,
+                    description=text,
+                    price=cls._parse_price(text),
+                    condition=cls._extract_field(
+                        text,
+                        "Condition",
+                    ),
+                    year=cls._extract_field(
+                        text,
+                        "Year",
+                    ),
+                    image_url=image_url,
+                )
+            )
+
+        unique = {
+            item.item_id: item
+            for item in items
+        }
+
+        return list(unique.values())
 
     @classmethod
     def parse_html(cls, html: str) -> list[PenboardItem]:
