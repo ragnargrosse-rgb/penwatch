@@ -205,12 +205,22 @@ class PenboardMonitor:
                     image["src"],
                 )
 
+            # Keep marketplace metadata such as prices, quantities,
+            # shipping costs and item numbers out of watchlist matching.
+            # On Penboard search pages these fields begin after "Actions".
+            description = re.split(
+                r"\s+Actions\s+",
+                text,
+                maxsplit=1,
+                flags=re.IGNORECASE,
+            )[0].strip()
+
             items.append(
                 PenboardItem(
                     item_id=item_id,
                     title=title,
                     url=url,
-                    description=text,
+                    description=description,
                     price=cls._parse_price(text),
                     condition=cls._extract_field(
                         text,

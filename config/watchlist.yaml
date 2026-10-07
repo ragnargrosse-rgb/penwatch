@@ -123,7 +123,7 @@ watchlists:
         - "guenther-wagner"
       -
         - exact: "30B"
-        - "30 B"
+        - exact: "30 B"
 
     sources:
       reddit:
