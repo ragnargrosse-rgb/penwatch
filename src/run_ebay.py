@@ -162,14 +162,12 @@ def main() -> None:
                 f"KNOWN: {item.item_id} | "
                 f"{item.title[:100]}"
             )
-            continue
-
-        new_items += 1
-
-        print(
-            f"NEW: {item.item_id} | "
-            f"{item.title[:100]}"
-        )
+        else:
+            new_items += 1
+            print(
+                f"NEW: {item.item_id} | "
+                f"{item.title[:100]}"
+            )
 
         for entry in entries:
             matched_terms = Watchlist.matches(

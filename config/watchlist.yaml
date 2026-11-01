@@ -1,238 +1,297 @@
 watchlists:
 
   # ============================================================
-  # SOENNECKEN 111 / 222 + PENCILS 11 / 22
+  # SOENNECKEN 111 / 222 + BLEISTIFTE 11 / 22
   # ============================================================
 
-  - id: soennecken-111-222
-    name: "Soennecken 111 / 222 / 11 / 22"
-    enabled: true
-
-    include_groups:
-      -
-        - "soennecken"
-        - "sönnecken"
-      -
-        - exact: "111"
-        - exact: "222"
-        - exact: "11"
-        - exact: "22"
-
-    sources:
-      reddit:
-        enabled: true
-        subreddits:
-          - "Pen_Swap"
-      ebay:
-        enabled: true
-        queries:
-          - "Soennecken"
-
-    notification:
-      title: "PenWatch - Soennecken"
-
+  -   id: soennecken-111-222
+      name: Soennecken 111 / 222 / 11 / 22
+      enabled: true
+      include_groups:
+      -   - soennecken
+          - sönnecken
+      -   -   exact: '111'
+          -   exact: '222'
+          -   exact: '11'
+          -   exact: '22'
+      sources:
+          reddit:
+              enabled: true
+              subreddits:
+              - Pen_Swap
+          ebay:
+              enabled: true
+              queries:
+              - Soennecken
+      notification:
+          title: PenWatch - Soennecken
 
   # ============================================================
-  # PELIKAN LIGHT TORTOISE / HELL SCHILDPATT
+  # PELIKAN HELL SCHILDPATT
   # ============================================================
 
-  - id: pelikan-light-tortoise
-    name: "Pelikan Hell Schildpatt"
-    enabled: true
-
-    include_all:
-      - "pelikan"
-
-    include_groups:
-      -
-        - "hell schildpatt"
-        - "hellschildpatt"
-        - "light tortoise"
-        - "light tortoiseshell"
-        - "full light tortoise"
-
-    sources:
-      reddit:
-        enabled: true
-        subreddits:
-          - "Pen_Swap"
-      ebay:
-        enabled: true
-        queries:
-          - "Pelikan Schildpatt"
-          - "Pelikan tortoise"
-
-    notification:
-      title: "PenWatch - Pelikan Hell Schildpatt"
-
+  -   id: pelikan-light-tortoise
+      name: Pelikan Hell Schildpatt
+      enabled: true
+      include_all:
+      - pelikan
+      include_groups:
+      -   - hell schildpatt
+          - hellschildpatt
+          - light tortoise
+          - light tortoiseshell
+          - full light tortoise
+          - light tortoise shell
+          - helles schildpatt
+          - light brown tortoise
+      sources:
+          reddit:
+              enabled: true
+              subreddits:
+              - Pen_Swap
+          ebay:
+              enabled: true
+              queries:
+              - Pelikan Schildpatt
+              - Pelikan tortoise
+      notification:
+          title: PenWatch - Pelikan Hell Schildpatt
 
   # ============================================================
-  # PELIKAN ART / ADVERTISING CALENDAR 1987
+  # PELIKAN KALENDER 1987
   # ============================================================
 
-  - id: pelikan-calendar-1987
-    name: "Pelikan Kalender 1987"
-    enabled: true
-
-    include_all:
-      - "pelikan"
-
-    include_groups:
-      -
-        - exact: "1987"
-      -
-        - "kalender"
-        - "calendar"
-        - "wandkalender"
-        - "kunstkalender"
-        - "plakatkalender"
-        - "werbekalender"
-
-    exclude:
-      - "TKKG"
-
-    sources:
-      reddit:
-        enabled: true
-        subreddits:
-          - "Pen_Swap"
-      ebay:
-        enabled: true
-        queries:
-          - "Pelikan 1987"
-
-    notification:
-      title: "PenWatch - Pelikan Kalender 1987"
-
+  -   id: pelikan-calendar-1987
+      name: Pelikan Kalender 1987
+      enabled: true
+      include_all:
+      - pelikan
+      include_groups:
+      -   -   exact: '1987'
+      -   - kalender
+          - calendar
+          - wandkalender
+          - kunstkalender
+          - plakatkalender
+          - werbekalender
+      exclude:
+      - TKKG
+      sources:
+          reddit:
+              enabled: true
+              subreddits:
+              - Pen_Swap
+          ebay:
+              enabled: true
+              queries:
+              - Pelikan 1987
+      notification:
+          title: PenWatch - Pelikan Kalender 1987
 
   # ============================================================
-  # PELIKAN / GÜNTHER WAGNER PREISLISTE 30B
+  # PELIKAN PREISLISTE 30B
   # ============================================================
 
-  - id: pelikan-pricelist-30b
-    name: "Pelikan Preisliste 30B"
-    enabled: true
-
-    include_groups:
-      -
-        - "pelikan"
-        - "günther wagner"
-        - "guenther wagner"
-        - "gunther wagner"
-        - "günther-wagner"
-        - "guenther-wagner"
-      -
-        - exact: "30B"
-        - exact: "30 B"
-
-    sources:
-      reddit:
-        enabled: true
-        subreddits:
-          - "Pen_Swap"
-      ebay:
-        enabled: true
-        queries:
-          - "Pelikan 30B"
-          - "Günther Wagner 30B"
-
-    notification:
-      title: "PenWatch - Pelikan Preisliste 30B"
-
+  -   id: pelikan-pricelist-30b
+      name: Pelikan Preisliste 30B
+      enabled: true
+      include_groups:
+      -   - pelikan
+          - günther wagner
+          - guenther wagner
+          - gunther wagner
+          - günther-wagner
+          - guenther-wagner
+      -   -   exact: 30B
+          -   exact: 30 B
+          -   exact: 30-B
+      sources:
+          reddit:
+              enabled: true
+              subreddits:
+              - Pen_Swap
+          ebay:
+              enabled: true
+              queries:
+              - Pelikan 30B
+              - Günther Wagner 30B
+      notification:
+          title: PenWatch - Pelikan Preisliste 30B
 
   # ============================================================
-  # PELIKAN 60 / P60 "KNICKEBEIN"
+  # PELIKAN 60 / P60 KNICKEBEIN
   # ============================================================
 
-  - id: pelikan-knickebein
-    name: "Pelikan 60 / P60 Knickebein"
-    enabled: true
-
-    include_groups:
-      -
-        - "pelikan"
-        - "günther wagner"
-        - "guenther wagner"
-      -
-        - "knickebein"
-        - "knicke-bein"
-        - exact: "P60"
-        - "P 60"
-        - exact: "60"
-
-    sources:
-      reddit:
-        enabled: true
-        subreddits:
-          - "Pen_Swap"
-      ebay:
-        enabled: true
-        queries:
-          - "Pelikan Knickebein"
-          - "Pelikan P60"
-
-    notification:
-      title: "PenWatch - Pelikan Knickebein"
-
+  -   id: pelikan-knickebein
+      name: Pelikan 60 / P60 Knickebein
+      enabled: true
+      include_groups:
+      -   - pelikan
+          - günther wagner
+          - guenther wagner
+      -   - knickebein
+          - knicke-bein
+          -   exact: P60
+          - P 60
+          -   exact: '60'
+      sources:
+          reddit:
+              enabled: true
+              subreddits:
+              - Pen_Swap
+          ebay:
+              enabled: true
+              queries:
+              - Pelikan Knickebein
+              - Pelikan P60
+      notification:
+          title: PenWatch - Pelikan Knickebein
 
   # ============================================================
   # PELIKAN M800 OCEAN SWIRL
   # ============================================================
 
-  - id: pelikan-m800-ocean-swirl
-    name: "Pelikan M800 Ocean Swirl"
-    enabled: true
+  -   id: pelikan-m800-ocean-swirl
+      name: Pelikan M800 Ocean Swirl
+      enabled: true
+      include_all:
+      - pelikan
+      include_groups:
+      -   - ocean swirl
+          - oceanswirl
+      sources:
+          reddit:
+              enabled: true
+              subreddits:
+              - Pen_Swap
+          ebay:
+              enabled: true
+              queries:
+              - Pelikan M800 Ocean Swirl
+      notification:
+          title: PenWatch - Pelikan M800 Ocean Swirl
 
-    include_all:
-      - "pelikan"
+  # ============================================================
+  # PELIKAN BBB / OBBB
+  # ============================================================
 
-    include_groups:
-      -
-        - exact: "M800"
-        - "M 800"
-      -
-        - "ocean swirl"
-        - "oceanswirl"
+  -   id: pelikan-bbb-obbb
+      name: Pelikan BBB / OBBB
+      enabled: true
+      include_all:
+      - pelikan
+      include_groups:
+      -   -   exact: BBB
+          -   exact: OBBB
+      sources:
+          reddit:
+              enabled: true
+              subreddits:
+              - Pen_Swap
+          ebay:
+              enabled: true
+              queries:
+              - Pelikan BBB
+              - Pelikan OBBB
+      notification:
+          title: PenWatch - Pelikan BBB / OBBB
 
-    sources:
-      reddit:
-        enabled: true
-        subreddits:
-          - "Pen_Swap"
-      ebay:
-        enabled: true
-        queries:
-          - "Pelikan M800 Ocean Swirl"
+  # ============================================================
+  # PELIKAN PREISLISTE 73 (1938)
+  # ============================================================
 
-    notification:
-      title: "PenWatch - Pelikan M800 Ocean Swirl"
-# ============================================================
-# PELIKAN / BBB OR OBBB NIB
-# ============================================================
+  -   id: pelikan-pricelist-73
+      name: Pelikan Preisliste 73 (1938)
+      enabled: true
+      include_groups:
+      -   - pelikan
+          - günther wagner
+          - guenther wagner
+          - gunther wagner
+          - günther-wagner
+          - guenther-wagner
+      -   - preisliste
+          - price list
+          - pricelist
+          - '1938'
+      -   -   exact: '73'
+      notification:
+          title: PenWatch - Pelikan Preisliste 73
+      sources:
+          ebay:
+              enabled: true
+              queries:
+              - Pelikan Preisliste 73
+              - Günther Wagner 73
 
-  - id: pelikan-bbb-obbb
-    name: "Pelikan BBB / OBBB"
-    enabled: true
+  # ============================================================
+  # PELIKAN PREISLISTE 65 (1935)
+  # ============================================================
 
-    include_all:
-      - "pelikan"
+  -   id: pelikan-pricelist-65
+      name: Pelikan Preisliste 65 (1935)
+      enabled: true
+      include_groups:
+      -   - pelikan
+          - günther wagner
+          - guenther wagner
+          - gunther wagner
+          - günther-wagner
+          - guenther-wagner
+      -   - preisliste
+          - price list
+          - pricelist
+          - '1935'
+      -   -   exact: '65'
+      notification:
+          title: PenWatch - Pelikan Preisliste 65
+      sources:
+          ebay:
+              enabled: true
+              queries:
+              - Pelikan Preisliste 65
+              - Günther Wagner 65
 
-    include_groups:
-      -
-        - exact: "BBB"
-        - exact: "OBBB"
+  # ============================================================
+  # PELIKAN 660 – FÜLLHALTER / REISETINTENFLASCHE
+  # ============================================================
 
-    sources:
-      reddit:
-        enabled: true
-        subreddits:
-          - "Pen_Swap"
+  -   id: pelikan-660
+      name: Pelikan 660 – Füllhalter / Reisetintenflasche
+      enabled: true
+      include_groups:
+      -   - pelikan
+          - mitsukoshi
+      -   -   exact: '660'
+      notification:
+          title: PenWatch - Pelikan 660
+      sources:
+          ebay:
+              enabled: true
+              queries:
+              - Pelikan 660
+              - Mitsukoshi 660
 
-      ebay:
-        enabled: true
-        queries:
-          - "Pelikan BBB"
-          - "Pelikan OBBB"
+  # ============================================================
+  # PELIKAN WARENKUNDE
+  # ============================================================
 
-    notification:
-      title: "PenWatch - Pelikan BBB / OBBB"
+  -   id: pelikan-warenkunde
+      name: Pelikan Warenkunde
+      enabled: true
+      include_groups:
+      -   - pelikan
+          - günther wagner
+          - guenther wagner
+          - gunther wagner
+          - günther-wagner
+          - guenther-wagner
+      -   - warenkunde
+      notification:
+          title: PenWatch - Pelikan Warenkunde
+      sources:
+          ebay:
+              enabled: true
+              queries:
+              - Pelikan Warenkunde
+              - Günther Wagner Warenkunde
