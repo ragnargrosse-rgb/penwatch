@@ -1,0 +1,11 @@
+[Unit]
+Description=Run PenWatch Peyton Street Pens every hour
+
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=10min
+Persistent=true
+Unit=penwatch-peytonstreetpens.service
+
+[Install]
+WantedBy=timers.target

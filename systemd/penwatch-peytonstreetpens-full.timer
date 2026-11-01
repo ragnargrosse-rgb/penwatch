@@ -1,0 +1,11 @@
+[Unit]
+Description=Run PenWatch Peyton Street Pens full scan weekly
+
+[Timer]
+OnCalendar=Sun *-*-* 03:00:00
+RandomizedDelaySec=30min
+Persistent=true
+Unit=penwatch-peytonstreetpens-full.service
+
+[Install]
+WantedBy=timers.target
