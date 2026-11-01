@@ -1,0 +1,12 @@
+[Unit]
+Description=PenWatch MARTINI Auctions Monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=penwatch
+Group=penwatch
+WorkingDirectory=/opt/penwatch
+EnvironmentFile=/opt/penwatch/.env
+ExecStart=/usr/bin/flock -w 7200 /tmp/penwatch-martini.lock /opt/penwatch/venv/bin/python /opt/penwatch/src/run_martini.py

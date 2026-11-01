@@ -1,0 +1,11 @@
+[Unit]
+Description=Run PenWatch MARTINI Auctions every 30 minutes
+
+[Timer]
+OnCalendar=*:0/30
+RandomizedDelaySec=5min
+Persistent=true
+Unit=penwatch-martini.service
+
+[Install]
+WantedBy=timers.target

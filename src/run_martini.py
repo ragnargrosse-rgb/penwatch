@@ -30,6 +30,12 @@ def main() -> None:
         help="Do not send notifications or write to the database.",
     )
 
+    parser.add_argument(
+        "--full-scan",
+        action="store_true",
+        help="Scan all available MARTINI catalogue pages.",
+    )
+
     args = parser.parse_args()
 
     database = Database()
@@ -41,7 +47,7 @@ def main() -> None:
     if not args.dry_run:
         notifier = NtfyNotifier()
 
-    items = monitor.fetch()
+    items = monitor.fetch(full_scan=args.full_scan)
     entries = watchlist.enabled()
 
     print(
@@ -53,20 +59,17 @@ def main() -> None:
     matches_found = 0
 
     for item in items:
-        if database.has_source_item(
+        is_known = database.has_source_item(
             monitor.SOURCE,
             item.item_id,
-        ):
-            print(
-                f"KNOWN: {item.item_id} | "
-                f"{item.title[:80]}"
-            )
-            continue
+        )
 
-        new_items += 1
+        if not is_known:
+            new_items += 1
 
+        status = "KNOWN" if is_known else "NEW"
         print(
-            f"NEW: {item.item_id} | "
+            f"{status}: {item.item_id} | "
             f"{item.title[:80]}"
         )
 

@@ -1,0 +1,11 @@
+[Unit]
+Description=Run PenWatch MARTINI Auctions full scan weekly
+
+[Timer]
+OnCalendar=Sun *-*-* 03:00:00
+RandomizedDelaySec=30min
+Persistent=true
+Unit=penwatch-martini-full.service
+
+[Install]
+WantedBy=timers.target

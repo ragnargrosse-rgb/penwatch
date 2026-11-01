@@ -83,7 +83,8 @@ A source integration therefore retrieves public listings, while the central watc
 | Source | Status | Coverage |
 |---|---|---|
 | Penboard | Operational | New and searchable existing inventory |
-| MARTINI Auctions | Operational | Public auction inventory |
+| MARTINI Auctions | Operational; expanded monitoring pending deployment | Public auction inventory; newly listed pages and full-catalogue scanning |
+| Peyton Street Pens | Operational | Public dealer inventory; recent listings and weekly full-catalogue scans |
 | Interpens | Operational | Public dealer inventory |
 | VintagePens | Operational | Public feed/inventory |
 | Catawiki | Operational / being extended | Paginated fountain-pen collection |
@@ -105,7 +106,27 @@ The expanded parser is therefore designed to discover relevant items from the se
 
 ### MARTINI Auctions
 
-PenWatch retrieves publicly available auction inventory and evaluates newly discovered items against the configured watchlists.
+The existing production integration monitors publicly available auction inventory.
+
+An expanded implementation has been developed and is undergoing validation before production deployment. It provides:
+
+- regular scans of the first two catalogue pages, sorted by newly listed items;
+- full-catalogue pagination for a planned weekly scan;
+- a minimum delay of ten seconds between paginated requests;
+- detection of empty or repeated pages and premature pagination termination;
+- re-evaluation of previously discovered items against current watchlists;
+- persistent source-item and source-item/watchlist deduplication;
+- dry-run execution without notifications or database writes.
+
+The planned production schedule is every 30 minutes for regular scans and weekly for full scans. Both services will use a shared execution lock.
+
+### Peyton Street Pens
+
+The Peyton Street Pens integration monitors publicly accessible dealer inventory.
+
+It combines regular scans of recent listings with a weekly full-catalogue scan. The full scan follows pagination and uses a delay between requests.
+
+Listings are normalized and evaluated against the central watchlists. Persistent SQLite state prevents duplicate notifications. The regular and full scans use a shared execution lock.
 
 ### Interpens
 
@@ -234,7 +255,7 @@ PenWatch uses SQLite to maintain state between monitoring cycles.
 
 Stores source items that have already been observed.
 
-Once an item has been successfully evaluated, it is treated as known during subsequent monitoring cycles.
+Source integrations use this state to identify previously discovered items. Some integrations, including the expanded MARTINI monitor, deliberately re-evaluate known items when scanning so that updated watchlists can identify previously unmatched inventory.
 
 ### `seen_items`
 
@@ -339,7 +360,8 @@ PenWatch does not operate a public search service and does not redistribute coll
 ### Operational
 
 - Penboard
-- MARTINI Auctions
+- MARTINI Auctions (existing production integration)
+- Peyton Street Pens
 - Interpens
 - VintagePens
 - Catawiki collection monitoring and pagination
@@ -351,6 +373,7 @@ PenWatch does not operate a public search service and does not redistribute coll
 
 ### Integration in progress
 
+- expanded MARTINI Auctions monitoring: full-catalogue validation and production deployment pending
 - selective Catawiki detail-page enrichment
 
 ### Inactive / awaiting access
