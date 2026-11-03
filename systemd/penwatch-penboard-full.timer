@@ -1,0 +1,11 @@
+[Unit]
+Description=Run PenWatch Penboard Full Scan weekly
+
+[Timer]
+OnCalendar=Sun *-*-* 05:00:00 UTC
+RandomizedDelaySec=30min
+Persistent=true
+Unit=penwatch-penboard-full.service
+
+[Install]
+WantedBy=timers.target

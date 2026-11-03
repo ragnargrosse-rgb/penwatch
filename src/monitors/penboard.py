@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from decimal import Decimal
 import re
+import time
 
 import requests
 from bs4 import BeautifulSoup
@@ -44,56 +45,110 @@ class PenboardMonitor:
         "Soennecken",
     )
 
+    FULL_SCAN_TERMS = (
+        "100",
+        "100N",
+        "140",
+        "400",
+        "400N",
+        "400NN",
+        "660",
+        "M800",
+        "Knickebein",
+        "Schildpatt",
+        "Warenkunde",
+        "Preisliste",
+        "Soennecken 111",
+        "Soennecken 222",
+    )
+
     def __init__(self, timeout: int = 20) -> None:
         self.timeout = timeout
 
-    def fetch(self) -> list[PenboardItem]:
-        headers = {
+    def fetch(
+        self,
+        full_scan: bool = False,
+        delay: float = 2.0,
+    ) -> list[PenboardItem]:
+        if delay < 2.0:
+            raise ValueError("Penboard scan delay must be at least 2 seconds.")
+
+        session = requests.Session()
+        session.headers.update({
             "User-Agent": (
                 "PenWatch/1.0 "
                 "(personal non-commercial collector monitor)"
             )
-        }
+        })
 
-        all_items: list[PenboardItem] = []
+        all_items: dict[str, PenboardItem] = {}
 
-        # What's New remains useful for newly listed inventory.
-        response = requests.get(
+        def add_items(items: list[PenboardItem]) -> None:
+            for item in items:
+                previous = all_items.get(item.item_id)
+                if previous is None or len(item.searchable_text) > len(previous.searchable_text):
+                    all_items[item.item_id] = item
+
+        response = session.get(
             self.WHATS_NEW_URL,
             timeout=self.timeout,
-            headers=headers,
         )
         response.raise_for_status()
+        add_items(self.parse_html(response.text))
 
-        all_items.extend(
-            self.parse_html(response.text)
-        )
-
-        # Search current inventory for brands relevant to
-        # the active PenWatch watchlists.
-        for term in self.SEARCH_TERMS:
-            response = requests.get(
-                self.SEARCH_URL,
-                params={
-                    "srchvalue": term,
-                    "shop_seller": "0",
-                },
+        if full_scan:
+            # Discover seller IDs from the live shop navigation.
+            time.sleep(delay)
+            response = session.get(
+                f"{self.BASE_URL}/shop/home",
                 timeout=self.timeout,
-                headers=headers,
             )
             response.raise_for_status()
 
-            all_items.extend(
-                self.parse_search_html(response.text)
-            )
+            soup = BeautifulSoup(response.text, "html.parser")
+            seller_options = soup.select("#searchseller option")
 
-        # The same item can occur in What's New and search results.
-        unique = {
-            item.item_id: item
-            for item in all_items
-        }
+            if not seller_options:
+                raise RuntimeError(
+                    "Penboard seller navigation not found; "
+                    "full scan cannot verify seller coverage."
+                )
 
-        return list(unique.values())
+            seller_ids = list(dict.fromkeys(
+                option.get("value")
+                for option in seller_options
+                if option.get("value") is not None
+            ))
+
+            if "0" not in seller_ids:
+                raise RuntimeError(
+                    "Penboard all-sellers option missing."
+                )
+
+            terms = ("",) + tuple(dict.fromkeys(
+                self.SEARCH_TERMS + self.FULL_SCAN_TERMS
+            ))
+        else:
+            seller_ids = ["0"]
+            terms = self.SEARCH_TERMS
+
+        for term in terms:
+            for seller_id in seller_ids:
+                time.sleep(delay)
+
+                response = session.get(
+                    self.SEARCH_URL,
+                    params={
+                        "srchvalue": term,
+                        "shop_seller": seller_id,
+                    },
+                    timeout=self.timeout,
+                )
+                response.raise_for_status()
+
+                add_items(self.parse_search_html(response.text))
+
+        return list(all_items.values())
 
 
     @staticmethod

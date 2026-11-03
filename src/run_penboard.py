@@ -35,6 +35,12 @@ def main() -> None:
         help="Do not send notifications or write to the database.",
     )
 
+    parser.add_argument(
+        "--full-scan",
+        action="store_true",
+        help="Search additional Penboard inventory terms.",
+    )
+
     args = parser.parse_args()
 
     database = Database()
@@ -46,7 +52,7 @@ def main() -> None:
     if not args.dry_run:
         notifier = NtfyNotifier()
 
-    items = monitor.fetch()
+    items = monitor.fetch(full_scan=args.full_scan)
     entries = watchlist.enabled()
 
     print(
@@ -68,14 +74,13 @@ def main() -> None:
                 f"KNOWN: {item.item_id} | "
                 f"{item.title[:80]}"
             )
-            continue
+        else:
+            new_items += 1
 
-        new_items += 1
-
-        print(
-            f"NEW: {item.item_id} | "
-            f"{item.title[:80]}"
-        )
+            print(
+                f"NEW: {item.item_id} | "
+                f"{item.title[:80]}"
+            )
 
         text = item.searchable_text
 

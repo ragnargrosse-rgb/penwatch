@@ -1,0 +1,11 @@
+[Unit]
+Description=Run PenWatch Penboard Monitor every 30 minutes
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=30min
+Persistent=true
+Unit=penwatch-penboard.service
+
+[Install]
+WantedBy=timers.target
